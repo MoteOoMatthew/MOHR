@@ -31,8 +31,14 @@ if (config.security.rateLimit) {
   app.use('/api/', limiter);
 }
 
-// Serve static files from React app
-app.use(express.static(path.join(__dirname, '../frontend/build')));
+// Serve static files from React app (if it exists)
+const frontendBuildPath = path.join(__dirname, '../frontend/build');
+if (require('fs').existsSync(frontendBuildPath)) {
+  app.use(express.static(frontendBuildPath));
+}
+
+// Serve static files from backend public directory as fallback
+app.use(express.static(path.join(__dirname, 'public')));
 
 // API Routes
 app.use('/api/auth', authRoutes);
@@ -44,9 +50,16 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'MOHR HR System is running!' });
 });
 
-// Catch all handler: send back React's index.html file for any non-API routes
+// Catch all handler: send back static index.html file for any non-API routes
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/build/index.html'));
+  const reactIndexPath = path.join(__dirname, '../frontend/build/index.html');
+  const staticIndexPath = path.join(__dirname, 'public/index.html');
+  
+  if (require('fs').existsSync(reactIndexPath)) {
+    res.sendFile(reactIndexPath);
+  } else {
+    res.sendFile(staticIndexPath);
+  }
 });
 
 // Error handling middleware
