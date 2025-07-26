@@ -15,6 +15,7 @@
     "build:web": "cd frontend && npm run build",
     "build:frontend": "cd frontend && npm run build",
     "build:production": "node scripts/build-production.js",
+    "build:simple": "node scripts/build-simple.js",
     "start:backend": "cd backend && npm start",
     "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install && cd ../electron && npm install",
     "clean": "node scripts/clean.js",
