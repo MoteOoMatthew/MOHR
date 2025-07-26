@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: mohr-hr-system
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build:frontend
+    startCommand: npm run start:backend
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: HOST
+        value: 0.0.0.0
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DB_TYPE
+        value: sqlite
+      - key: CORS_ORIGIN
+        value: "*" 
