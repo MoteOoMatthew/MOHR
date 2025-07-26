@@ -23,7 +23,8 @@
     "deploy:vercel_railway": "node scripts/deploy-remote.js vercel_railway",
     "deploy:digitalocean": "node scripts/deploy-remote.js digitalocean",
     "deploy:vps": "node scripts/deploy-remote.js vps",
-    "deploy:list": "node scripts/deploy-remote.js list"
+    "deploy:list": "node scripts/deploy-remote.js list",
+    "deploy:render": "node scripts/deploy-render.js"
   },
   "keywords": [
     "hr",
