@@ -1,0 +1,63 @@
+{
+  "name": "mohr-hr-system",
+  "version": "1.0.0",
+  "description": "Modular HR Management System - Web-based, multi-user, multi-privilege level HR system with mobile-first design",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node scripts/deploy.js development",
+    "dev": "node scripts/deploy.js development",
+    "network": "node scripts/deploy.js local_network",
+    "prod": "node scripts/deploy.js production",
+    "remote": "node scripts/deploy.js remote",
+    "electron": "node scripts/deploy.js electron",
+    "build-electron": "node scripts/build-electron.js",
+    "backup": "node scripts/backup.js",
+    "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install && cd ../electron && npm install",
+    "build": "cd frontend && npm run build",
+    "test": "node scripts/test-clean-install.js",
+    "clean": "rm -rf node_modules backend/node_modules frontend/node_modules electron/node_modules",
+    "backup": "cp backend/mohr.db backup/mohr_$(date +%Y%m%d_%H%M%S).db",
+    "health": "curl http://localhost:5000/api/health"
+  },
+  "keywords": [
+    "hr",
+    "human-resources",
+    "management",
+    "web-app",
+    "mobile",
+    "pwa",
+    "electron",
+    "react",
+    "nodejs",
+    "sqlite"
+  ],
+  "author": "MOHR Team",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/mohr-hr-system.git"
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "workspaces": [
+    "backend",
+    "frontend",
+    "electron"
+  ],
+  "devDependencies": {},
+  "dependencies": {},
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+} 
