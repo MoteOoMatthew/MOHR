@@ -1,0 +1,16 @@
+{
+  "name": "mohr-hr-system",
+  "version": "1.0.0",
+  "description": "MOHR HR System - Backend Only",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "cd backend && node server.js",
+    "start:backend": "cd backend && node server.js"
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+} 
