@@ -3,7 +3,7 @@ services:
     name: mohr-hr-system
     env: node
     plan: free
-    buildCommand: npm run build:render
+    buildCommand: npm install && cd frontend && npm install && npm run build && cd ../backend && npm install --production
     startCommand: npm run start:backend
     envVars:
       - key: NODE_ENV
