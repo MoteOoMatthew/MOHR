@@ -19,6 +19,7 @@
     "build:render": "node scripts/build-render.js",
     "build:minimal": "node scripts/build-minimal.js",
     "build:shell": "chmod +x build.sh && ./build.sh",
+    "build:copy": "node scripts/build-copy.js",
     "start:backend": "cd backend && npm start",
     "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install && cd ../electron && npm install",
     "clean": "node scripts/clean.js",
