@@ -10,7 +10,7 @@
     "prod": "node scripts/deploy-improved.js production",
     "electron": "node scripts/deploy-improved.js electron",
     "desktop": "node scripts/deploy-improved.js desktop",
-    "build": "node scripts/build-electron.js",
+    "build": "node scripts/build-production.js",
     "build:electron": "node scripts/build-electron.js",
     "build:web": "cd frontend && npm run build",
     "build:frontend": "cd frontend && npm run build",
