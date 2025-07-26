@@ -18,9 +18,9 @@ const config = {
   },
   production: {
     serverPort: 5000,
-    frontendPort: 3000,
-    serverPath: path.join(__dirname, '../backend/server.js'),
-    frontendUrl: 'http://localhost:3000'
+    frontendPort: 5000,
+    serverPath: path.join(__dirname, 'resources/backend/server.js'),
+    frontendUrl: 'http://localhost:5000'
   }
 };
 
@@ -51,8 +51,8 @@ function createWindow() {
     mainWindow.loadURL(currentConfig.frontendUrl);
     mainWindow.webContents.openDevTools();
   } else {
-    // Production: Load from built React app
-    mainWindow.loadFile(path.join(__dirname, '../frontend/build/index.html'));
+    // Production: Load from local server (more reliable)
+    mainWindow.loadURL('http://localhost:5000');
   }
 
   // Show window when ready

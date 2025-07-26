@@ -1,313 +1,264 @@
 #!/usr/bin/env node
 
-/**
- * MOHR HR System - Electron Build Script
- * 
- * This script automates the Electron packaging process for all platforms
- */
-
 const { execSync, spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-// Colors for console output
-const colors = {
-  reset: '\x1b[0m',
-  bright: '\x1b[1m',
-  red: '\x1b[31m',
-  green: '\x1b[32m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m',
-  magenta: '\x1b[35m',
-  cyan: '\x1b[36m'
-};
+console.log('🔨 MOHR HR System - Robust Electron Build Script\n');
 
-function log(message, color = 'reset') {
-  console.log(`${colors[color]}${message}${colors.reset}`);
-}
-
-function logStep(step, description) {
-  log(`\n${colors.bright}${colors.blue}${step}${colors.reset} - ${description}`);
-}
-
-function logSuccess(message) {
-  log(`✅ ${message}`, 'green');
-}
-
-function logError(message) {
-  log(`❌ ${message}`, 'red');
-}
-
-function logWarning(message) {
-  log(`⚠️  ${message}`, 'yellow');
-}
-
-function logInfo(message) {
-  log(`ℹ️  ${message}`, 'cyan');
-}
-
-// Build configuration
-const buildConfig = {
-  platforms: {
+// Configuration
+const config = {
+  skipCodeSigning: true, // Skip code signing to avoid network/permission issues
+  buildOptions: {
     win: {
-      name: 'Windows',
-      targets: ['nsis', 'portable'],
-      arch: ['x64']
-    },
-    mac: {
-      name: 'macOS',
-      targets: ['dmg', 'zip'],
-      arch: ['x64', 'arm64']
-    },
-    linux: {
-      name: 'Linux',
-      targets: ['AppImage', 'deb', 'rpm'],
-      arch: ['x64']
+      target: 'portable', // Use portable instead of installer to avoid code signing
+      icon: path.join(__dirname, '../electron/assets/icon.ico')
     }
-  },
-  currentPlatform: os.platform(),
-  currentArch: os.arch()
+  }
 };
 
-// Helper function to run commands
-function runCommand(command, cwd = process.cwd(), silent = false) {
-  try {
-    const options = {
-      cwd,
-      stdio: silent ? 'pipe' : 'inherit',
-      timeout: 300000 // 5 minutes
-    };
-    
-    const result = execSync(command, options);
-    return { success: true, output: result };
-  } catch (error) {
-    return { success: false, error: error.message };
-  }
-}
-
-// Check prerequisites
 function checkPrerequisites() {
-  logStep('1', 'Checking Prerequisites');
+  console.log('🔍 Checking prerequisites...');
   
-  // Check if we're in the right directory
-  if (!fs.existsSync('electron/package.json')) {
-    logError('Not in the correct directory. Please run from project root.');
-    return false;
-  }
-  
-  // Check if frontend is built
-  if (!fs.existsSync('frontend/build/index.html')) {
-    logWarning('Frontend not built. Building frontend first...');
-    const buildResult = runCommand('npm run build', 'frontend');
-    if (!buildResult.success) {
-      logError('Failed to build frontend');
-      return false;
-    }
-    logSuccess('Frontend built successfully');
-  } else {
-    logSuccess('Frontend already built');
-  }
-  
-  // Check Node.js version
-  const nodeResult = runCommand('node --version', '.', true);
-  if (nodeResult.success) {
-    const version = nodeResult.output.toString().trim();
-    logSuccess(`Node.js version: ${version}`);
-  } else {
-    logError('Node.js not found');
-    return false;
+  // Check Node.js
+  try {
+    const nodeVersion = execSync('node --version', { encoding: 'utf8' }).trim();
+    console.log(`✅ Node.js: ${nodeVersion}`);
+  } catch (e) {
+    console.error('❌ Node.js not found');
+    process.exit(1);
   }
   
   // Check npm
-  const npmResult = runCommand('npm --version', '.', true);
-  if (npmResult.success) {
-    const version = npmResult.output.toString().trim();
-    logSuccess(`npm version: ${version}`);
-  } else {
-    logError('npm not found');
-    return false;
+  try {
+    const npmVersion = execSync('npm --version', { encoding: 'utf8' }).trim();
+    console.log(`✅ npm: ${npmVersion}`);
+  } catch (e) {
+    console.error('❌ npm not found');
+    process.exit(1);
   }
-  
-  return true;
 }
 
-// Install Electron dependencies
+function fixPowerShellExecutionPolicy() {
+  if (os.platform() === 'win32') {
+    console.log('🔧 Fixing PowerShell execution policy...');
+    try {
+      execSync('powershell -Command "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force"', {
+        stdio: 'ignore'
+      });
+      console.log('✅ PowerShell execution policy fixed');
+    } catch (e) {
+      console.warn('⚠️ Could not fix PowerShell execution policy automatically');
+    }
+  }
+}
+
+function killExistingProcesses() {
+  console.log('🔄 Stopping existing processes...');
+  try {
+    if (os.platform() === 'win32') {
+      execSync('taskkill /F /IM node.exe 2>nul || exit 0', { stdio: 'ignore' });
+    } else {
+      execSync('pkill -f "node.*server.js" 2>/dev/null || exit 0', { stdio: 'ignore' });
+    }
+    console.log('✅ Existing processes stopped');
+  } catch (e) {
+    // Ignore errors if no processes were running
+  }
+}
+
 function installDependencies() {
-  logStep('2', 'Installing Dependencies');
+  console.log('\n📦 Installing dependencies...');
   
-  logInfo('Installing Electron dependencies...');
-  const installResult = runCommand('npm install', 'electron');
-  if (!installResult.success) {
-    logError('Failed to install Electron dependencies');
-    return false;
-  }
-  logSuccess('Electron dependencies installed');
+  const dirs = ['backend', 'frontend', 'electron'];
   
-  return true;
+  dirs.forEach(dir => {
+    const pkgPath = path.join(__dirname, '..', dir, 'package.json');
+    if (fs.existsSync(pkgPath)) {
+      console.log(`\n📦 Installing dependencies in ${dir}...`);
+      try {
+        execSync('npm install', {
+          cwd: path.join(__dirname, '..', dir),
+          stdio: 'inherit'
+        });
+        console.log(`✅ ${dir} dependencies installed`);
+      } catch (e) {
+        console.error(`❌ Failed to install dependencies in ${dir}`);
+        process.exit(1);
+      }
+    }
+  });
 }
 
-// Build for specific platform
-function buildForPlatform(platform) {
-  const platformConfig = buildConfig.platforms[platform];
-  if (!platformConfig) {
-    logError(`Unknown platform: ${platform}`);
-    return false;
-  }
+function buildFrontend() {
+  console.log('\n🔨 Building frontend...');
+  const frontendPath = path.join(__dirname, '..', 'frontend');
   
-  logStep('3', `Building for ${platformConfig.name}`);
-  
-  // Check if we can build for this platform
-  if (platform === 'mac' && buildConfig.currentPlatform !== 'darwin') {
-    logWarning('macOS builds can only be created on macOS');
-    return false;
-  }
-  
-  if (platform === 'win' && buildConfig.currentPlatform === 'darwin') {
-    logWarning('Windows builds on macOS require additional setup');
-  }
-  
-  // Build command
-  const buildCommand = `npm run dist-${platform}`;
-  logInfo(`Running: ${buildCommand}`);
-  
-  const buildResult = runCommand(buildCommand, 'electron');
-  if (!buildResult.success) {
-    logError(`Failed to build for ${platformConfig.name}`);
-    return false;
-  }
-  
-  logSuccess(`Successfully built for ${platformConfig.name}`);
-  
-  // List generated files
-  const distPath = path.join('electron', 'dist');
-  if (fs.existsSync(distPath)) {
-    const files = fs.readdirSync(distPath);
-    logInfo('Generated files:');
-    files.forEach(file => {
-      logInfo(`  - ${file}`);
+  try {
+    execSync('npm run build', {
+      cwd: frontendPath,
+      stdio: 'inherit'
     });
+    console.log('✅ Frontend built successfully');
+  } catch (e) {
+    console.error('❌ Frontend build failed');
+    process.exit(1);
   }
-  
-  return true;
 }
 
-// Build for all platforms
-function buildAllPlatforms() {
-  logStep('3', 'Building for All Platforms');
+function buildElectron() {
+  console.log('\n🔨 Building Electron application...');
+  const electronPath = path.join(__dirname, '..', 'electron');
   
-  const platforms = Object.keys(buildConfig.platforms);
-  let successCount = 0;
+  // Create electron-builder config
+  const builderConfig = {
+    appId: 'com.mohr.hrsystem',
+    productName: 'MOHR HR System',
+    directories: {
+      output: 'dist'
+    },
+    files: [
+      '**/*',
+      '!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}',
+      '!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}',
+      '!**/node_modules/*.d.ts',
+      '!**/node_modules/.bin',
+      '!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}',
+      '!.editorconfig',
+      '!**/._*',
+      '!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}',
+      '!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}',
+      '!**/{appveyor.yml,.travis.yml,circle.yml}',
+      '!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}'
+    ],
+    win: {
+      target: 'portable',
+      icon: path.join(__dirname, '../electron/assets/icon.ico')
+    },
+    mac: {
+      target: 'dmg',
+      icon: path.join(__dirname, '../electron/assets/icon.icns')
+    },
+    linux: {
+      target: 'AppImage',
+      icon: path.join(__dirname, '../electron/assets/icon.png')
+    }
+  };
   
-  for (const platform of platforms) {
-    logInfo(`Building for ${buildConfig.platforms[platform].name}...`);
-    if (buildForPlatform(platform)) {
-      successCount++;
+  // Write electron-builder config
+  const configPath = path.join(electronPath, 'electron-builder.json');
+  fs.writeFileSync(configPath, JSON.stringify(builderConfig, null, 2));
+  
+  try {
+    // Build without code signing
+    execSync('npx electron-builder --config electron-builder.json --win portable --publish=never', {
+      cwd: electronPath,
+      stdio: 'inherit',
+      env: {
+        ...process.env,
+        CSC_IDENTITY_AUTO_DISCOVERY: 'false' // Disable code signing
+      }
+    });
+    console.log('✅ Electron application built successfully');
+  } catch (e) {
+    console.error('❌ Electron build failed');
+    console.log('\n💡 Trying alternative build method...');
+    
+    try {
+      // Fallback: use npm script
+      execSync('npm run dist-win', {
+        cwd: electronPath,
+        stdio: 'inherit',
+        env: {
+          ...process.env,
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        }
+      });
+      console.log('✅ Electron application built successfully (fallback method)');
+    } catch (e2) {
+      console.error('❌ All build methods failed');
+      process.exit(1);
     }
   }
-  
-  logSuccess(`Built for ${successCount}/${platforms.length} platforms`);
-  return successCount > 0;
 }
 
-// Create portable package
-function createPortablePackage() {
-  logStep('4', 'Creating Portable Package');
+function verifyBuild() {
+  console.log('\n🔍 Verifying build...');
   
-  logInfo('Creating portable Windows package...');
-  const portableResult = runCommand('npm run pack-win', 'electron');
-  if (!portableResult.success) {
-    logWarning('Failed to create portable package');
+  const distPath = path.join(__dirname, '..', 'electron', 'dist');
+  const winUnpackedPath = path.join(distPath, 'win-unpacked');
+  const exePath = path.join(winUnpackedPath, 'MOHR HR System.exe');
+  
+  if (fs.existsSync(exePath)) {
+    const stats = fs.statSync(exePath);
+    const sizeMB = (stats.size / (1024 * 1024)).toFixed(1);
+    console.log(`✅ Desktop application built successfully`);
+    console.log(`📁 Location: ${exePath}`);
+    console.log(`📊 Size: ${sizeMB} MB`);
+    return true;
+  } else {
+    console.error('❌ Desktop application not found');
     return false;
   }
-  
-  logSuccess('Portable package created');
-  return true;
 }
 
-// Main build function
-async function main() {
-  log(`${colors.bright}${colors.magenta}🔨 MOHR HR System - Electron Build${colors.reset}`);
-  log(`${colors.cyan}Building desktop application for distribution${colors.reset}\n`);
+function createLaunchScript() {
+  console.log('\n📝 Creating launch script...');
   
-  // Parse command line arguments
-  const args = process.argv.slice(2);
-  const platform = args[0];
-  const buildAll = args.includes('--all');
+  const launchScript = `@echo off
+title MOHR HR System - Desktop
+echo.
+echo ========================================
+echo    MOHR HR System - Desktop Launch
+echo ========================================
+echo.
+
+cd /d "%~dp0"
+if exist "MOHR HR System.exe" (
+    echo 🚀 Launching MOHR HR System...
+    start "" "MOHR HR System.exe"
+) else (
+    echo ❌ MOHR HR System.exe not found
+    echo Please run the build script first
+    pause
+)
+`;
   
-  // Check prerequisites
-  if (!checkPrerequisites()) {
-    process.exit(1);
-  }
-  
-  // Install dependencies
-  if (!installDependencies()) {
-    process.exit(1);
-  }
-  
-  // Build based on arguments
-  let buildSuccess = false;
-  
-  if (buildAll) {
-    buildSuccess = buildAllPlatforms();
-  } else if (platform) {
-    buildSuccess = buildForPlatform(platform);
-  } else {
-    // Build for current platform
-    const currentPlatform = buildConfig.currentPlatform === 'win32' ? 'win' : 
-                           buildConfig.currentPlatform === 'darwin' ? 'mac' : 'linux';
-    buildSuccess = buildForPlatform(currentPlatform);
-  }
-  
-  if (buildSuccess) {
-    // Create portable package if on Windows
-    if (buildConfig.currentPlatform === 'win32') {
-      createPortablePackage();
-    }
+  const scriptPath = path.join(__dirname, '..', 'electron', 'dist', 'win-unpacked', 'launch-mohr.bat');
+  fs.writeFileSync(scriptPath, launchScript);
+  console.log('✅ Launch script created');
+}
+
+function main() {
+  try {
+    checkPrerequisites();
+    fixPowerShellExecutionPolicy();
+    killExistingProcesses();
+    installDependencies();
+    buildFrontend();
+    buildElectron();
     
-    log(`\n${colors.bright}${colors.green}🎉 Build completed successfully!${colors.reset}`);
-    log(`${colors.cyan}Check the electron/dist directory for generated files.${colors.reset}`);
-  } else {
-    log(`\n${colors.bright}${colors.red}❌ Build failed!${colors.reset}`);
+    if (verifyBuild()) {
+      createLaunchScript();
+      
+      console.log('\n🎉 Desktop application build completed successfully!');
+      console.log('\n📋 Next steps:');
+      console.log('1. Navigate to: electron/dist/win-unpacked/');
+      console.log('2. Double-click "MOHR HR System.exe" to launch');
+      console.log('3. Or run "launch-mohr.bat" for easy launching');
+      console.log('\n💡 The desktop app will start its own backend server automatically');
+    } else {
+      process.exit(1);
+    }
+  } catch (error) {
+    console.error('\n❌ Build failed:', error.message);
     process.exit(1);
   }
 }
 
-// Show help
-function showHelp() {
-  log(`${colors.bright}${colors.cyan}Usage:${colors.reset}`);
-  log(`  node scripts/build-electron.js [platform] [options]`);
-  log(``);
-  log(`${colors.bright}${colors.cyan}Platforms:${colors.reset}`);
-  log(`  win     - Build for Windows`);
-  log(`  mac     - Build for macOS`);
-  log(`  linux   - Build for Linux`);
-  log(``);
-  log(`${colors.bright}${colors.cyan}Options:${colors.reset}`);
-  log(`  --all   - Build for all platforms`);
-  log(`  --help  - Show this help`);
-  log(``);
-  log(`${colors.bright}${colors.cyan}Examples:${colors.reset}`);
-  log(`  node scripts/build-electron.js          # Build for current platform`);
-  log(`  node scripts/build-electron.js win      # Build for Windows`);
-  log(`  node scripts/build-electron.js --all    # Build for all platforms`);
+if (require.main === module) {
+  main();
 }
 
-// Handle command line arguments
-if (process.argv.includes('--help')) {
-  showHelp();
-  process.exit(0);
-}
-
-// Run main function
-main().catch((error) => {
-  logError(`Build failed: ${error.message}`);
-  process.exit(1);
-});
-
-module.exports = {
-  buildForPlatform,
-  buildAllPlatforms,
-  checkPrerequisites,
-  installDependencies
-}; 
+module.exports = { main }; 

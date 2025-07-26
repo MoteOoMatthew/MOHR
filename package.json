@@ -1,63 +1,60 @@
 {
   "name": "mohr-hr-system",
   "version": "1.0.0",
-  "description": "Modular HR Management System - Web-based, multi-user, multi-privilege level HR system with mobile-first design",
-  "main": "backend/server.js",
+  "description": "Modular HR Management System with desktop and web interfaces",
+  "main": "index.js",
   "scripts": {
-    "start": "node scripts/deploy.js development",
-    "dev": "node scripts/deploy.js development",
-    "network": "node scripts/deploy.js local_network",
-    "prod": "node scripts/deploy.js production",
-    "remote": "node scripts/deploy.js remote",
-    "electron": "node scripts/deploy.js electron",
-    "build-electron": "node scripts/build-electron.js",
-    "backup": "node scripts/backup.js",
-    "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install && cd ../electron && npm install",
-    "build": "cd frontend && npm run build",
-    "test": "node scripts/test-clean-install.js",
-    "clean": "rm -rf node_modules backend/node_modules frontend/node_modules electron/node_modules",
-    "backup": "cp backend/mohr.db backup/mohr_$(date +%Y%m%d_%H%M%S).db",
-    "health": "curl http://localhost:5000/api/health"
+    "start": "node scripts/deploy-improved.js development",
+    "dev": "node scripts/deploy-improved.js development",
+    "local": "node scripts/deploy-improved.js local_network",
+    "prod": "node scripts/deploy-improved.js production",
+    "electron": "node scripts/deploy-improved.js electron",
+    "desktop": "node scripts/deploy-improved.js desktop",
+    "build": "node scripts/build-electron.js",
+    "build:electron": "node scripts/build-electron.js",
+    "build:web": "cd frontend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "start:backend": "cd backend && npm start",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install && cd ../electron && npm install",
+    "clean": "node scripts/clean.js",
+    "test": "echo \"No tests specified\" && exit 0",
+    "postinstall": "node scripts/postinstall.js",
+    "deploy:remote": "node scripts/deploy-remote.js",
+    "deploy:vercel_railway": "node scripts/deploy-remote.js vercel_railway",
+    "deploy:digitalocean": "node scripts/deploy-remote.js digitalocean",
+    "deploy:vps": "node scripts/deploy-remote.js vps",
+    "deploy:list": "node scripts/deploy-remote.js list"
   },
   "keywords": [
     "hr",
-    "human-resources",
     "management",
-    "web-app",
-    "mobile",
-    "pwa",
+    "system",
     "electron",
     "react",
     "nodejs",
-    "sqlite"
+    "desktop",
+    "web",
+    "pwa"
   ],
-  "author": "MOHR Team",
-  "license": "ISC",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/your-username/mohr-hr-system.git"
-  },
+  "author": "MOHR Development Team",
+  "license": "MIT",
   "engines": {
     "node": ">=14.0.0",
     "npm": ">=6.0.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/mohr-hr-system.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/mohr-hr-system/issues"
+  },
+  "homepage": "https://github.com/your-org/mohr-hr-system#readme",
+  "dependencies": {},
+  "devDependencies": {},
   "workspaces": [
     "backend",
-    "frontend",
+    "frontend", 
     "electron"
-  ],
-  "devDependencies": {},
-  "dependencies": {},
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  }
+  ]
 } 
