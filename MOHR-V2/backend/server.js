@@ -5,7 +5,6 @@ const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
 const session = require('express-session');
 const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const path = require('path');
 require('dotenv').config();
 
@@ -64,6 +63,7 @@ app.use(passport.session());
 
 // Google OAuth Strategy (only if credentials are configured)
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  const GoogleStrategy = require('passport-google-oauth20').Strategy;
   passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
@@ -99,8 +99,8 @@ passport.deserializeUser((user, done) => {
 });
 
 // Database initialization
-const initDatabase = require('./database/init');
-initDatabase();
+const dbInit = require('./database/init');
+dbInit.initDatabase();
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));

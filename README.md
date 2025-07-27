@@ -1,299 +1,318 @@
-# MOHR - Modular HR Management System
+# MOHR HR System V2 🚀
 
-A web-based, multi-user, multi-privilege level HR system that is modular, simple for non-technical users, and easy to extend. **Perfect for small to medium businesses with mobile-first design and multiple deployment options.**
+A modern, cloud-native HR management system built with Node.js, Express, and Google integration.
 
-## 🚀 Features
+## ✨ Features
 
-- **Multi-User Authentication**: Secure login with JWT tokens
-- **Role-Based Access Control**: Admin, Manager, and Employee roles
-- **Employee Management**: Complete CRUD operations for employee records
-- **User Management**: Admin can manage user accounts
-- **Modular Architecture**: Easy to add new features and modules
-- **📱 Mobile-First Design**: Responsive interface optimized for phones and tablets
-- **🔄 Progressive Web App (PWA)**: Install as mobile app, works offline
-- **🖥️ Desktop Application**: Electron wrapper for standalone operation
-- **🌐 Network Access**: Accessible from multiple devices on local network
-- **⚙️ Environment Configuration**: Flexible setup for different deployment scenarios
-- **🤖 Automated Deployment**: One-command setup and deployment scripts
-- **🔒 Security Features**: Helmet, rate limiting, CORS protection
-- **📊 SQLite Database**: Simple, file-based database (can be upgraded to PostgreSQL/MySQL)
-- **🔌 RESTful API**: Clean, well-documented API endpoints
-- **🎨 Modern UI**: React-based frontend with Tailwind CSS
+- **🔐 Authentication**: JWT-based authentication with Google OAuth support
+- **👥 Employee Management**: Complete employee lifecycle management
+- **📅 Leave Management**: Request, approve, and track leave requests
+- **👤 User Management**: Role-based access control (Admin/User)
+- **📊 Analytics**: Comprehensive HR analytics and reporting
+- **🔗 Google Integration**: Calendar and Drive integration
+- **☁️ Cloud Ready**: Designed for Render deployment
+- **🔒 Security**: Rate limiting, CORS, Helmet security headers
 
 ## 🏗️ Architecture
 
 ```
-MOHR/
-├── frontend/          # React application (PWA)
-│   ├── public/        # Static files & PWA manifest
-│   ├── src/           # React components
-│   └── package.json   # Frontend dependencies
-├── backend/           # Node.js/Express server
-│   ├── modules/       # Modular feature organization
-│   │   ├── auth/      # Authentication & authorization
-│   │   ├── users/     # User management
-│   │   └── employees/ # Employee management
-│   ├── server.js      # Main server file
-│   └── database.js    # Database setup & helpers
-├── electron/          # Desktop application wrapper
-│   ├── main.js        # Electron main process
-│   ├── preload.js     # Preload script
-│   └── package.json   # Electron configuration
-├── config/            # Environment configuration
-│   └── environment.js # Configuration management
-├── scripts/           # Deployment scripts
-│   └── deploy.js      # Automated deployment
-├── start-mohr.bat     # Windows startup script
-├── DEPLOYMENT.md      # Comprehensive deployment guide
-└── README.md
+MOHR-V2/
+├── backend/                 # Express.js API server
+│   ├── database/           # Database initialization
+│   ├── routes/             # API routes
+│   └── server.js           # Main server file
+├── frontend/               # React frontend (coming soon)
+├── package.json            # Root package.json
+├── render.yaml             # Render deployment config
+└── README.md              # This file
 ```
 
-## 🛠️ Quick Start
+## 🚀 Quick Start
 
-### 🪟 Windows Users (Easiest)
-1. **Double-click `start-mohr.bat`** - Installs dependencies and starts everything automatically
-2. **Open your browser** to `http://localhost:5000`
-3. **Login** with `admin` / `admin123`
+### Prerequisites
 
-### 💻 Command Line Users
-```bash
-# Development (local only)
-node scripts/deploy.js development
+- Node.js 18+ 
+- npm 8+
+- Git
 
-# Local Network (accessible from phones/other devices)
-node scripts/deploy.js local_network
+### Local Development
 
-# Production
-node scripts/deploy.js production
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd MOHR-V2
+   ```
 
-# Desktop Application
-node scripts/deploy.js electron
+2. **Install dependencies**
+   ```bash
+   npm run install:all
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cp env.example .env
+   # Edit .env with your configuration
+   ```
+
+4. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+
+5. **Access the API**
+   - API: http://localhost:5000
+   - Health Check: http://localhost:5000/api/health
+
+### Default Credentials
+
+- **Admin User**: 
+  - Username: `admin`
+  - Password: `admin123`
+  - Email: `admin@mohr.com`
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Copy `env.example` to `.env` and configure:
+
+```env
+# Server Configuration
+NODE_ENV=development
+PORT=5000
+HOST=0.0.0.0
+
+# Security
+JWT_SECRET=your-super-secret-jwt-key
+SESSION_SECRET=your-session-secret-key
+
+# Google OAuth (Required for Google integration)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_CALLBACK_URL=http://localhost:5000/auth/google/callback
 ```
 
-### 📱 Mobile Access
-After starting with `local_network` or `production`:
-1. Find your computer's IP address: `ipconfig` (Windows) or `ifconfig` (Mac/Linux)
-2. On your phone, open browser and go to: `http://YOUR_IP:5000`
-3. **Add to Home Screen** for app-like experience
+### Google OAuth Setup
 
-## 🌍 Deployment Scenarios
+1. **Create Google Cloud Project**
+   - Go to [Google Cloud Console](https://console.cloud.google.com/)
+   - Create a new project or select existing
 
-### Development
-- **Purpose**: Local development and testing
-- **Access**: Localhost only
-- **Features**: Hot reload, detailed logging
-- **Command**: `node scripts/deploy.js development`
+2. **Enable APIs**
+   - Google+ API
+   - Google Calendar API
+   - Google Drive API
 
-### Local Network
-- **Purpose**: Testing on multiple devices (phones, tablets)
-- **Access**: All devices on your WiFi network
-- **Features**: Network accessibility, mobile optimization
-- **Command**: `node scripts/deploy.js local_network`
+3. **Create OAuth 2.0 Credentials**
+   - Go to "Credentials" → "Create Credentials" → "OAuth 2.0 Client IDs"
+   - Application type: "Web application"
+   - Authorized redirect URIs:
+     - `http://localhost:5000/auth/google/callback` (development)
+     - `https://your-app.onrender.com/auth/google/callback` (production)
 
-### Production
-- **Purpose**: Live deployment for business use
-- **Access**: Configured for your domain/IP
-- **Features**: Security hardening, performance optimization
-- **Command**: `node scripts/deploy.js production`
+4. **Update Environment Variables**
+   - Copy Client ID and Client Secret to your `.env` file
 
-### Remote
-- **Purpose**: Cloud or remote server deployment
-- **Access**: Public internet access
-- **Features**: SSL support, advanced security
-- **Command**: `node scripts/deploy.js remote`
+## 📚 API Documentation
 
-### Desktop App
-- **Purpose**: Standalone desktop application
-- **Access**: No browser needed
-- **Features**: System tray, native notifications
-- **Command**: `node scripts/deploy.js electron`
+### Authentication Endpoints
 
-## 🔐 Default Login
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - Login user
+- `POST /api/auth/google/callback` - Google OAuth callback
+- `GET /api/auth/profile` - Get user profile
+- `PUT /api/auth/profile` - Update user profile
 
-The system creates a default admin user on first run:
+### Employee Management
 
-- **Username:** `admin`
-- **Password:** `admin123`
-- **Role:** `admin`
-
-⚠️ **Important:** Change the default password after first login!
-
-## 📱 Mobile Features
-
-### Progressive Web App (PWA)
-- **Install on Home Screen**: Works like a native app
-- **Offline Support**: Basic functionality without internet
-- **Push Notifications**: Real-time updates (coming soon)
-- **Touch Optimized**: Large buttons, swipe gestures
-
-### Mobile-First Design
-- **Responsive Layout**: Adapts to any screen size
-- **Touch Targets**: Minimum 44px for easy tapping
-- **Bottom Navigation**: Thumb-friendly navigation
-- **Fast Loading**: Optimized for mobile networks
-
-## 🔌 API Endpoints
-
-### Authentication
-- `POST /api/auth/login` - User login
-- `POST /api/auth/register` - Create new user (admin only)
-- `GET /api/auth/me` - Get current user info
-- `POST /api/auth/logout` - User logout
-
-### Users
-- `GET /api/users` - Get all users (admin only)
-- `GET /api/users/:id` - Get user by ID
-- `PUT /api/users/:id` - Update user
-- `DELETE /api/users/:id` - Deactivate user (admin only)
-- `POST /api/users/:id/reactivate` - Reactivate user (admin only)
-
-### Employees
 - `GET /api/employees` - Get all employees
+- `POST /api/employees` - Create new employee
 - `GET /api/employees/:id` - Get employee by ID
-- `POST /api/employees` - Create new employee (admin/manager only)
 - `PUT /api/employees/:id` - Update employee
-- `DELETE /api/employees/:id` - Deactivate employee (admin only)
-- `POST /api/employees/:id/reactivate` - Reactivate employee (admin only)
-- `GET /api/employees/departments/list` - Get all departments
-- `GET /api/employees/managers/list` - Get all managers
+- `DELETE /api/employees/:id` - Deactivate employee
+- `GET /api/employees/stats/overview` - Employee statistics
+
+### Leave Management
+
+- `GET /api/leave` - Get leave requests
+- `POST /api/leave` - Create leave request
+- `PUT /api/leave/:id` - Update leave request (admin)
+- `DELETE /api/leave/:id` - Delete leave request
+- `GET /api/leave/stats/overview` - Leave statistics
+
+### User Management (Admin Only)
+
+- `GET /api/users` - Get all users
+- `POST /api/users` - Create new user
+- `PUT /api/users/:id` - Update user
+- `DELETE /api/users/:id` - Deactivate user
+
+### Google Integration
+
+- `GET /api/google/calendar/events` - Get calendar events
+- `POST /api/google/calendar/events` - Create calendar event
+- `PUT /api/google/calendar/events/:id` - Update calendar event
+- `DELETE /api/google/calendar/events/:id` - Delete calendar event
+- `POST /api/google/calendar/sync` - Sync calendar with database
+
+## 🚀 Deployment to Render
+
+### Automatic Deployment
+
+1. **Push to GitHub**
+   ```bash
+   git add .
+   git commit -m "Initial MOHR V2 deployment"
+   git push origin main
+   ```
+
+2. **Connect to Render**
+   - Go to [Render Dashboard](https://dashboard.render.com/)
+   - Click "New" → "Web Service"
+   - Connect your GitHub repository
+   - Render will automatically detect the `render.yaml` configuration
+
+3. **Configure Environment Variables**
+   - In Render dashboard, go to your service
+   - Navigate to "Environment" tab
+   - Add your Google OAuth credentials:
+     - `GOOGLE_CLIENT_ID`
+     - `GOOGLE_CLIENT_SECRET`
+   - Update `GOOGLE_CALLBACK_URL` to your Render URL
+
+4. **Deploy**
+   - Render will automatically deploy your application
+   - Your API will be available at: `https://your-app-name.onrender.com`
+
+### Manual Deployment
+
+If you prefer manual setup:
+
+1. **Create Web Service**
+   - Service Type: Web Service
+   - Environment: Node
+   - Build Command: `npm run install:all`
+   - Start Command: `npm start`
+
+2. **Environment Variables**
+   ```env
+   NODE_ENV=production
+   JWT_SECRET=your-production-jwt-secret
+   SESSION_SECRET=your-production-session-secret
+   GOOGLE_CLIENT_ID=your-google-client-id
+   GOOGLE_CLIENT_SECRET=your-google-client-secret
+   GOOGLE_CALLBACK_URL=https://your-app.onrender.com/auth/google/callback
+   ```
 
 ## 🔒 Security Features
 
-- **Password Hashing**: All passwords are hashed using bcrypt
 - **JWT Authentication**: Secure token-based authentication
-- **Role-Based Access Control**: Different permissions for different roles
-- **Input Validation**: Server-side validation for all inputs
+- **Rate Limiting**: API rate limiting to prevent abuse
+- **CORS Protection**: Configurable CORS settings
+- **Helmet Security**: Security headers protection
+- **Input Validation**: Request validation using express-validator
 - **SQL Injection Protection**: Parameterized queries
-- **CORS Configuration**: Cross-origin resource sharing setup
-- **Helmet Security**: HTTP headers protection
-- **Rate Limiting**: API request throttling
-- **Environment Variables**: Secure configuration management
+- **Password Hashing**: bcrypt password hashing
 
-## 🎯 User Roles & Permissions
+## 📊 Database Schema
 
-### Admin
-- Full system access
-- Can create, read, update, delete users and employees
-- Can manage user roles and permissions
-- Can view all system data
-- Can access system configuration
+### Users Table
+- `id` (Primary Key)
+- `username` (Unique)
+- `email` (Unique)
+- `password_hash`
+- `google_id` (Unique, for Google OAuth)
+- `name`
+- `picture_url`
+- `role` (admin/user)
+- `is_active`
+- `created_at`
+- `updated_at`
 
-### Manager
-- Can manage employees in their department
-- Can view employee information
-- Can approve/reject leave requests
-- Cannot manage user accounts
-- Can access team reports
+### Employees Table
+- `id` (Primary Key)
+- `employee_id` (Unique)
+- `first_name`
+- `last_name`
+- `email` (Unique)
+- `phone`
+- `position`
+- `department`
+- `hire_date`
+- `salary`
+- `manager_id` (Foreign Key)
+- `is_active`
+- `created_at`
+- `updated_at`
 
-### Employee
-- Can view their own information
-- Can update their own profile
-- Can submit leave requests
-- Cannot access other employee data
-- Can view their own reports
+### Leave Requests Table
+- `id` (Primary Key)
+- `employee_id` (Foreign Key)
+- `leave_type`
+- `start_date`
+- `end_date`
+- `days_requested`
+- `reason`
+- `status` (pending/approved/rejected)
+- `approved_by` (Foreign Key)
+- `approved_at`
+- `created_at`
+- `updated_at`
 
-## 🚀 Adding New Modules
+## 🛠️ Development
 
-The system is designed to be modular. To add a new feature:
+### Available Scripts
 
-1. **Create a new module directory:**
-   ```bash
-   mkdir backend/modules/your-module
-   ```
+- `npm run dev` - Start development server (backend + frontend)
+- `npm run dev:backend` - Start backend only
+- `npm run dev:frontend` - Start frontend only
+- `npm run build` - Build frontend for production
+- `npm start` - Start production server
+- `npm run install:all` - Install all dependencies
 
-2. **Create the module files:**
-   - `routes.js` - API endpoints
-   - `controller.js` - Business logic (optional)
-   - `model.js` - Data models (optional)
+### Project Structure
 
-3. **Add the module to server.js:**
-   ```javascript
-   const yourModuleRoutes = require('./modules/your-module/routes');
-   app.use('/api/your-module', yourModuleRoutes);
-   ```
-
-4. **Add database tables** in `database.js` if needed
-
-5. **Add frontend components** in `frontend/src/components/`
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **Port already in use:**
-   ```bash
-   # Windows
-   netstat -ano | findstr :5000
-   taskkill /PID <PID> /F
-   
-   # Mac/Linux
-   lsof -i :5000
-   kill -9 <PID>
-   ```
-
-2. **Database errors:**
-   - Delete `mohr.db` file and restart the server to recreate the database
-
-3. **Module not found errors:**
-   ```bash
-   # Install all dependencies
-   node scripts/deploy.js development
-   ```
-
-4. **Mobile not connecting:**
-   - Ensure you're using `local_network` or `production` deployment
-   - Check firewall settings
-   - Verify both devices are on same WiFi network
-
-5. **CORS errors:**
-   - Ensure the frontend is running on the correct port
-   - Check CORS configuration in `config/environment.js`
-
-### Network Troubleshooting
-
-**Find your IP address:**
-```bash
-# Windows
-ipconfig
-
-# Mac/Linux
-ifconfig
 ```
-
-**Test network connectivity:**
-```bash
-# From another device
-ping YOUR_IP_ADDRESS
+backend/
+├── database/
+│   └── init.js              # Database initialization
+├── routes/
+│   ├── auth.js              # Authentication routes
+│   ├── users.js             # User management routes
+│   ├── employees.js         # Employee management routes
+│   ├── leave.js             # Leave management routes
+│   └── google.js            # Google integration routes
+├── package.json             # Backend dependencies
+└── server.js                # Main server file
 ```
-
-## 📝 Development Notes
-
-- **Database**: SQLite for simplicity. For production, consider PostgreSQL or MySQL
-- **Security**: JWT secret should be changed in production using environment variables
-- **Environment**: Use `config/environment.js` for different deployment scenarios
-- **Mobile**: Test on actual devices, not just browser dev tools
-- **Performance**: Frontend is optimized for mobile networks
-- **Updates**: Use `scripts/deploy.js` for consistent deployments
-
-## 📚 Additional Documentation
-
-- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Comprehensive deployment guide
-- **[Environment Configuration](config/environment.js)** - Configuration options
-- **[API Documentation](backend/modules/)** - Detailed API documentation
-- **[Google Integration](docs/GOOGLE_INTEGRATION.md)** - Google Apps integration planning
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly (including mobile)
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## 📄 License
+## 📝 License
 
-This project is licensed under the ISC License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+- **Documentation**: Check this README and API documentation
+- **Issues**: Create an issue on GitHub
+- **Email**: Contact the development team
+
+## 🔄 Version History
+
+- **v2.0.0** - Complete rewrite with modern architecture
+  - Google OAuth integration
+  - Cloud-native design
+  - Enhanced security
+  - Comprehensive API
+  - Render deployment ready
 
 ---
 
-**MOHR HR System** - Making HR management simple, mobile-friendly, and modular! 🎉📱
+**Built with ❤️ for modern HR management**
