@@ -99,8 +99,7 @@ passport.deserializeUser((user, done) => {
 });
 
 // Database initialization
-const initDatabase = require('./database/init');
-initDatabase();
+const { initDatabase } = require('./database/init');
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));

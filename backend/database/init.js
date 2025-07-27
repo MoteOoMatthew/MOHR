@@ -146,8 +146,8 @@ const getAll = (sql, params = []) => {
 // Create default admin user
 const createDefaultAdmin = async () => {
   try {
-    // Check if admin user exists
-    const adminUser = await getRow('SELECT * FROM users WHERE username = ?', ['admin']);
+    // Check if admin user exists by both username and email
+    const adminUser = await getRow('SELECT * FROM users WHERE username = ? OR email = ?', ['admin', 'admin@mohr.com']);
     
     if (!adminUser) {
       const hashedPassword = await bcrypt.hash('admin123', 10);
@@ -158,6 +158,8 @@ const createDefaultAdmin = async () => {
       `, ['admin', 'admin@mohr.com', hashedPassword, 'System Administrator', 'admin']);
       
       console.log('✅ Default admin user created (username: admin, password: admin123)');
+    } else {
+      console.log('✅ Default admin user already exists');
     }
   } catch (error) {
     console.error('❌ Error creating default admin:', error);

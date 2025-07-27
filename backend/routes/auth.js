@@ -70,14 +70,18 @@ router.post('/register', [
 
 // Login user
 router.post('/login', [
-  body('email').isEmail().withMessage('Must be a valid email'),
   body('password').notEmpty().withMessage('Password is required')
 ], validateRequest, async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, username, password } = req.body;
+    const loginField = email || username;
 
-    // Find user
-    const user = await getRow('SELECT * FROM users WHERE email = ? AND is_active = 1', [email]);
+    if (!loginField) {
+      return res.status(400).json({ error: 'Email or username is required' });
+    }
+
+    // Find user by email or username
+    const user = await getRow('SELECT * FROM users WHERE (email = ? OR username = ?) AND is_active = 1', [loginField, loginField]);
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }

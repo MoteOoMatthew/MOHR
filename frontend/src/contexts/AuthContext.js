@@ -53,6 +53,9 @@ export const AuthProvider = ({ children }) => {
 
       const { token: newToken, user: userData } = response.data;
       
+      // Set authorization header immediately
+      axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+      
       setToken(newToken);
       setUser(userData);
       localStorage.setItem('mohr_token', newToken);
